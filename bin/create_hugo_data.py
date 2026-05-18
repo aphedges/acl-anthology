@@ -255,7 +255,7 @@ def volume_to_dict(volume):
     if events := volume.get_events():
         data["events"] = sorted(event.id for event in events if event.is_explicit)
     if sigs := volume.get_sigs():
-        data["sigs"] = [sig.acronym for sig in sigs]
+        data["sigs"] = sorted(sig.acronym for sig in sigs)
     if volume.type == VolumeType.JOURNAL:
         data["meta_journal_title"] = volume.journal_title
         data["meta_issue"] = volume.journal_issue
