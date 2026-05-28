@@ -120,7 +120,7 @@ def remove_extra_whitespace(text: str) -> str:
     Returns:
         The input string without newlines and consecutive whitespace replaced by a single whitespace character.
     """
-    text = text.replace("\n", "").strip()
+    text = text.replace("\n", " ").strip()
     # This was profiled to be 2x-4x faster than using re.sub();
     # also cf. https://stackoverflow.com/a/15913564
     while "  " in text:
