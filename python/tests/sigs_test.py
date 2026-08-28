@@ -51,10 +51,10 @@ def test_sigindex_sigsem(anthology):
         )
         in sig.external_meetings
     )
-    assert len(sig.item_ids) == 1
-    assert ("2022.naloma", "1", None) in sig.item_ids
-    volume = next(sig.volumes())
-    assert volume.full_id == "2022.naloma-1"
+    assert len(sig.item_ids) == 2
+    assert {("2022.naloma", "1", None), ("W07", "16", None)} == sig.item_ids
+    volume_full_ids = {volume.full_id for volume in sig.volumes()}
+    assert volume_full_ids == {"2022.naloma-1", "W07-16"}
 
 
 def test_sig_get_meetings_by_year_fake():
@@ -74,7 +74,8 @@ def test_sig_get_meetings_by_year_sigsem(anthology):
     index = SIGIndex(anthology)
     sig = index.get("sigsem")
 
-    assert sig.get_meetings_by_year() == {
+    output = sig.get_meetings_by_year()
+    correct = {
         "1999": [
             SIGMeeting(
                 "1999",
@@ -87,14 +88,18 @@ def test_sig_get_meetings_by_year_sigsem(anthology):
             ),
         ],
         "2007": [
+            "W07-16",
             SIGMeeting(
                 "2007",
                 "Proceedings of the Seventh International Workshop on Computational Semantics (IWCS-7)",
                 "http://let.uvt.nl/research/ti/sigsem/iwcs/iwcs7/",
-            )
+            ),
         ],
         "2022": ["2022.naloma-1"],
     }
+    assert output == correct
+    # Verify keys are consistently sorted
+    assert list(output) == list(correct)
 
 
 def test_sigindex_roundtrip_data(anthology, tmp_path):

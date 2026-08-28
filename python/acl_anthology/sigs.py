@@ -80,10 +80,11 @@ class SIG:
             A dictionary where keys are strings representing years, and values are meetings of this SIG in that year.
         """
         by_year: dict[str, list[str | SIGMeeting]] = defaultdict(list)
-        for volume in self.volumes():
+        for volume in sorted(self.volumes(), key=lambda v: v.full_id):
             by_year[volume.year].append(volume.full_id)
         for meeting in self.external_meetings:
             by_year[meeting.year].append(meeting)
+        by_year = {year: by_year[year] for year in sorted(by_year)}
         return by_year
 
     @deprecated("SIG.save() is deprecated in favor of SIGIndex.save()")

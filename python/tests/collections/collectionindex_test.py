@@ -19,9 +19,9 @@ from acl_anthology.collections import CollectionIndex
 def test_collectionindex_load(anthology_stub):
     index = CollectionIndex(anthology_stub)
     index.load()
-    assert len(index) == 6
+    assert len(index) == 7
     index.load()  # should be noop
-    assert len(index) == 6
+    assert len(index) == 7
 
 
 def test_collectionindex_get_collection(anthology_stub):
