@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<collection id="W07">
+  <volume id="16" type="proceedings">
+    <!-- https://aclanthology.org/W07-16/ -->
+    <meta>
+      <booktitle>Proceedings of the Fourth <fixed-case>ACL</fixed-case>-<fixed-case>SIGSEM</fixed-case> Workshop on Prepositions</booktitle>
+      <year>2007</year>
+      <sig>sigsem</sig>
+    </meta>
+  </volume>
+</collection>

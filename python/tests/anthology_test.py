@@ -94,14 +94,14 @@ def test_get_frontmatter(anthology, id_):
 
 def test_volumes(anthology):
     # Iterate over all volumes
-    expected = set(("2022.acl", "2022.naloma", "J89", "L06"))
+    expected = set(("2022.acl", "2022.naloma", "J89", "L06", "W07"))
     found = set()
     count = 0
     for volume in anthology.volumes():
         count += 1
         found.add(volume.collection_id)
     assert expected == found
-    assert count == 11
+    assert count == 12
 
 
 def test_volumes_by_id(anthology):
