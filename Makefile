@@ -230,8 +230,13 @@ archive:
 	echo "INFO     Archiving $$source_dir to $$destination"; \
 	rclone copy "$$source_dir" "$$destination" --progress
 
+.PHONY: download-nltk-data
+download-nltk-data:
+	# Needed by bin/fixedcase/common.py during `make test-scripts`.
+	uv run python -c "import nltk; nltk.download('punkt_tab')"
+
 .PHONY: test-scripts
-test-scripts:
+test-scripts: download-nltk-data
 	uv run python -m pytest tests/ -v
 
 # Sometimes after a merge conflict the entries in people.json
