@@ -495,9 +495,9 @@
             <div class="card bg-light mb-2 mb-lg-3">
               <div class="card-body acl-abstract">
                 <h5 class="card-title">Abstract</h5>
-                <span{{ if $paper.retracted }} class="text-decoration-line-through" {{ end }}>
+                <div{{ if $paper.retracted }} class="text-decoration-line-through" {{ end }}>
                   {{ . | safeHTML }}
-                </span>
+                </div>
               </div>
             </div>
             {{ end }}
