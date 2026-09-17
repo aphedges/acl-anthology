@@ -113,19 +113,35 @@ test_cases_markup = (
             "latex": "See \\href{https://example.org}{the \\textit{emphasized} link} now",
         },
     ),
-    (  # Paragraph break <par/>
+    (  # Paragraph break <par/> followed by text
         "Paragraph one.<par/>Paragraph two.",
         {
             "text": "Paragraph one.\n\nParagraph two.",
-            "html": "Paragraph one.<br/><br/>Paragraph two.",
+            "html": "<p>Paragraph one.</p><p>Paragraph two.</p>",
             "latex": "Paragraph one.\\par Paragraph two.",
+        },
+    ),
+    (  # Paragraph break <par/> followed by other element
+        "Paragraph one.<par/><i>Paragraph two.</i>",
+        {
+            "text": "Paragraph one.\n\nParagraph two.",
+            "html": "<p>Paragraph one.</p><p><i>Paragraph two.</i></p>",
+            "latex": "Paragraph one.\\par \\textit{Paragraph two.}",
+        },
+    ),
+    (
+        "<b>Paragraph</b> one.<par/>Paragraph two.",
+        {
+            "text": "Paragraph one.\n\nParagraph two.",
+            "html": "<p><b>Paragraph</b> one.</p><p>Paragraph two.</p>",
+            "latex": "\\textbf{Paragraph} one.\\par Paragraph two.",
         },
     ),
     (
         "Taking a <par/>break",
         {
             "text": "Taking a\n\nbreak",
-            "html": "Taking a<br/><br/>break",
+            "html": "<p>Taking a</p><p>break</p>",
             "latex": "Taking a\\par break",
         },
     ),
@@ -133,7 +149,7 @@ test_cases_markup = (
         "Taking a<par/>break",
         {
             "text": "Taking a\n\nbreak",
-            "html": "Taking a<br/><br/>break",
+            "html": "<p>Taking a</p><p>break</p>",
             "latex": "Taking a\\par break",
         },
     ),
@@ -141,7 +157,7 @@ test_cases_markup = (
         "Taking a <par/>    break",
         {
             "text": "Taking a\n\nbreak",
-            "html": "Taking a<br/><br/>break",
+            "html": "<p>Taking a</p><p>break</p>",
             "latex": "Taking a\\par break",
         },
     ),
@@ -369,6 +385,31 @@ def test_markup_as_html_without_url(inp, html):
     element = etree.fromstring(f"<title>{inp}</title>")
     markup = MarkupText.from_xml(element)
     assert markup.as_html(allow_url=False) == html
+    # The XML representation should be unaffected by the rendering option
+    assert markup.as_xml() == inp
+
+
+test_cases_markup_block = (
+    (  # String-only markup should be 1 `<p>`
+        "The nltk package",
+        "<p>The nltk package</p>",
+    ),
+    (  # Markup without an explicit root should be 1 `<p>`
+        "The <tt>nltk</tt> package",
+        "<p>The <tt>nltk</tt> package</p>",
+    ),
+    (  # Markup with one `<par/>` should be 2 `<p>`
+        "Paragraph one.<par/>Paragraph two.",
+        "<p>Paragraph one.</p><p>Paragraph two.</p>",
+    ),
+)
+
+
+@pytest.mark.parametrize("inp, html", test_cases_markup_block)
+def test_markup_as_html_block(inp, html):
+    element = etree.fromstring(f"<title>{inp}</title>")
+    markup = MarkupText.from_xml(element)
+    assert markup.as_html(block=True) == html
     # The XML representation should be unaffected by the rendering option
     assert markup.as_xml() == inp
 

@@ -202,7 +202,7 @@ class MarkupText:
         self._text = unprotect_par(text, "\n\n") if has_par else text
         return self._text
 
-    def as_html(self, allow_url: bool = True) -> str:
+    def as_html(self, allow_url: bool = True, block: bool = False) -> str:
         """
         Returns:
             Text with markup transformed into HTML.
@@ -210,12 +210,45 @@ class MarkupText:
         Arguments:
             allow_url: Defaults to True. If False, URLs are **not** wrapped in
                 `<a href="...">` tags, but in simply `<span>` tags.
+            block: Defaults to False. If True, HTML is wrapped in 1 or more `<p>` tags.
+                If the markup includes a paragraph break (`<par/>`), then this parameter
+                will be treated as True, regardless of its actual value.
         """
         if isinstance(self._content, str):
-            return xml_escape(remove_extra_whitespace(self._content))
+            html_output = xml_escape(remove_extra_whitespace(self._content))
+            if block:
+                html_output = f"<p>{html_output}</p>"
+            return html_output
         if self._html is not None:
             return self._html
         element = copy(self._content)
+
+        # Paragraphing (`<par/>` and block) needs special handling
+        contains_par = element.find("par") is not None
+        # Basic block formatting only requires converting the content into a `<p>`
+        if block and not contains_par:
+            root = etree.Element("root")
+            element.tag = "p"
+            root.append(element)
+            element = root
+        # `<par/>` requires splitting the content into multiple `<p>` arguments
+        # This logic is safe because the RELAX-NG schema puts `<par>` at the top level,
+        # i.e., it will never be child of any XML element besides the content root
+        elif contains_par:
+            root = etree.Element("root")
+            cur_par = etree.SubElement(root, "p")
+            cur_par.text = element.text
+            for sub in element:
+                # Create a new paragraph to append to
+                if sub.tag == "par":
+                    new_par = etree.Element("p")
+                    cur_par.addnext(new_par)
+                    new_par.text = sub.tail
+                    cur_par = new_par
+                else:
+                    cur_par.append(sub)
+            element = root
+
         for sub in element.iter():
             if sub.tag == "url":
                 if allow_url:
@@ -238,20 +271,13 @@ class MarkupText:
                 parsed_elem = TexMath.to_html(sub)
                 parsed_elem.tail = sub.tail
                 sub.getparent().replace(sub, parsed_elem)  # type: ignore
-            elif sub.tag == "par":
-                # A paragraph break; for now, as a hack, convert to HTML <br/><br/>
-                sub.tag = "br"
-                another = etree.Element("br")
-                another.tail = sub.tail
-                sub.tail = None
-                sub.addnext(another)
             elif len(sub) == 0 and sub.text is None:
                 sub.text = ""
 
         self._html = remove_extra_whitespace(stringify_children(element))
 
-        # remove whitespace before or after <br/>
-        self._html = re.sub(r"\s*((<br/>)+)\s*", r"\1", self._html)
+        # remove whitespace before and after `</p><p>`
+        self._html = re.sub(r"\s*((</p><p>)+)\s*", r"\1", self._html)
         return self._html
 
     def as_latex(self) -> str:
